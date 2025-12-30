@@ -1,5 +1,6 @@
 package com.example.wedding_planner.ui.screen.login
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,7 +43,13 @@ fun LoginScreenRoute(
     onNavigateToOrganization: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-
+    val context = LocalContext.current
+    LaunchedEffect(state.error) {
+        state.error?.let { errorMessage ->
+            Toast.makeText(context, "ERRO: $errorMessage", Toast.LENGTH_LONG).show()
+            viewModel.onErrorShown()
+        }
+    }
     LaunchedEffect(state.navigationDestination) {
         when (state.navigationDestination) {
             LoginDestination.HOME -> {
