@@ -182,7 +182,7 @@ private fun ProfileContent(
 
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Versão 1.0.0",
+                            text = "Versão 1.0.1",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                         )
