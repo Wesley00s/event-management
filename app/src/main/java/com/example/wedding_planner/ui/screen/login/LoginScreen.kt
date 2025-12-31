@@ -47,7 +47,6 @@ fun LoginScreenRoute(
     LaunchedEffect(state.error) {
         state.error?.let { errorMessage ->
             Toast.makeText(context, "ERRO: $errorMessage", Toast.LENGTH_LONG).show()
-            viewModel.onErrorShown()
         }
     }
     LaunchedEffect(state.navigationDestination) {
