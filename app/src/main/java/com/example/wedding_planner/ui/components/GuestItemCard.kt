@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,6 +51,7 @@ import com.example.wedding_planner.ui.theme.GoldColor
 @Composable
 fun GuestItemCard(
     guest: Guest,
+    onClick: () -> Unit, 
     onUpdateRole: (SpecialRole) -> Unit,
     onDelete: () -> Unit
 ) {
@@ -57,7 +59,10 @@ fun GuestItemCard(
     val isHonorGuest = guest.isHonorGuest()
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)), 
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
