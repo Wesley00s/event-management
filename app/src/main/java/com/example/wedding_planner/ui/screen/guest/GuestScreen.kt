@@ -85,8 +85,10 @@ fun GuestScreen(
     uiState: GuestUiState,
     onEvent: (GuestUiEvent) -> Unit
 ) {
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var guestToEdit by remember { mutableStateOf<Guest?>(null) }
     var guestToDelete by remember { mutableStateOf<Guest?>(null) }
+
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearchActive by remember { mutableStateOf(false) }
@@ -98,6 +100,7 @@ fun GuestScreen(
         searchQuery = ""
         focusManager.clearFocus()
     }
+
     val tabs = remember(uiState.guests) {
         val totalCount = uiState.guests.size
         val brideCount = uiState.guests.count { it.side == GuestSide.BRIDE }
@@ -109,6 +112,7 @@ fun GuestScreen(
             "Noivo ($groomCount)"
         )
     }
+
     val filteredGuests by remember(selectedTabIndex, uiState.guests, searchQuery) {
         derivedStateOf {
             if (searchQuery.isNotBlank()) {
@@ -123,13 +127,17 @@ fun GuestScreen(
             }
         }
     }
+
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
         containerColor = Color.Transparent,
         floatingActionButton = {
             if (!isSearchActive) {
                 FloatingActionButton(
-                    onClick = { showAddDialog = true },
+                    onClick = {
+                        guestToEdit = null
+                        showDialog = true
+                    },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
@@ -141,6 +149,8 @@ fun GuestScreen(
         HomeBackground(modifier = modifier.padding(padding)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))
+
+
                 AnimatedContent(
                     targetState = isSearchActive,
                     transitionSpec = {
@@ -166,10 +176,9 @@ fun GuestScreen(
                                 onValueChange = { searchQuery = it },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .focusRequester(focusRequester), 
+                                    .focusRequester(focusRequester),
                                 placeholder = { Text("Digite o nome...") },
                                 leadingIcon = {
-                                    
                                     IconButton(onClick = {
                                         isSearchActive = false
                                         searchQuery = ""
@@ -186,10 +195,12 @@ fun GuestScreen(
                                     }
                                 },
                                 singleLine = true,
-                                shape = RoundedCornerShape(24.dp), 
+                                shape = RoundedCornerShape(24.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha=0.5f),
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(
+                                        alpha = 0.5f
+                                    ),
                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                                     unfocusedContainerColor = MaterialTheme.colorScheme.surface
                                 )
@@ -244,13 +255,14 @@ fun GuestScreen(
                         }
                     }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 if (uiState.isLoading) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 } else if (filteredGuests.isEmpty()) {
-
                     val emptyMessage = when {
                         searchQuery.isNotEmpty() -> "Nenhum convidado encontrado para \"$searchQuery\"."
                         selectedTabIndex == 1 -> "Nenhum convidado da noiva."
@@ -272,6 +284,10 @@ fun GuestScreen(
                         items(filteredGuests, key = { it.id }) { guest ->
                             GuestItemCard(
                                 guest = guest,
+                                onClick = {
+                                    guestToEdit = guest
+                                    showDialog = true
+                                },
                                 onUpdateRole = { role ->
                                     onEvent(GuestUiEvent.UpdateRole(guest.id, role))
                                 },
@@ -283,15 +299,19 @@ fun GuestScreen(
                 }
             }
         }
-        if (showAddDialog) {
+
+
+        if (showDialog) {
             AddGuestDialog(
-                onDismiss = { showAddDialog = false },
-                onConfirm = { newGuest ->
-                    onEvent(GuestUiEvent.SaveGuest(newGuest))
-                    showAddDialog = false
+                guestToEdit = guestToEdit,
+                onDismiss = { showDialog = false },
+                onConfirm = { guest ->
+                    onEvent(GuestUiEvent.SaveGuest(guest))
+                    showDialog = false
                 }
             )
         }
+
         if (guestToDelete != null) {
             WeddingConfirmationDialog(
                 title = "Excluir Convidado?",
