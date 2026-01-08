@@ -39,18 +39,20 @@ import com.example.wedding_planner.data.model.enums.Kinship
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGuestDialog(
+    guestToEdit: Guest? = null, 
     onDismiss: () -> Unit,
     onConfirm: (Guest) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var selectedSide by remember { mutableStateOf(GuestSide.GROOM) }
-    var selectedKinship by remember { mutableStateOf(Kinship.FRIEND) }
+    var name by remember { mutableStateOf(guestToEdit?.name ?: "") }
+    var phone by remember { mutableStateOf(guestToEdit?.phone ?: "") }
+    var selectedSide by remember { mutableStateOf(guestToEdit?.side ?: GuestSide.GROOM) }
+    var selectedKinship by remember { mutableStateOf(guestToEdit?.kinship ?: Kinship.FRIEND) }
     var kinshipExpanded by remember { mutableStateOf(false) }
 
     WeddingBaseDialog(
         onDismiss = onDismiss,
-        title = "Novo Convidado",
+        
+        title = if (guestToEdit == null) "Novo Convidado" else "Editar Convidado",
         icon = Icons.Default.Person
     ) {
         Column {
@@ -101,7 +103,7 @@ fun AddGuestDialog(
                     FilterChip(
                         selected = selectedSide == side,
                         onClick = { selectedSide = side },
-                        label = { Text(side.label) }, 
+                        label = { Text(side.label) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -114,7 +116,7 @@ fun AddGuestDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = selectedKinship.label, 
+                    value = selectedKinship.label,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = kinshipExpanded) },
@@ -133,7 +135,7 @@ fun AddGuestDialog(
                 ) {
                     Kinship.entries.forEach { kinship ->
                         DropdownMenuItem(
-                            text = { Text(kinship.label) }, 
+                            text = { Text(kinship.label) },
                             onClick = {
                                 selectedKinship = kinship
                                 kinshipExpanded = false
@@ -145,19 +147,23 @@ fun AddGuestDialog(
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
-                    onConfirm(
-                        Guest(
-                            name = name,
-                            phone = phone,
-                            side = selectedSide,
-                            kinship = selectedKinship
-                        )
+                    val finalGuest = guestToEdit?.copy(
+                        name = name,
+                        phone = phone,
+                        side = selectedSide,
+                        kinship = selectedKinship
+                    ) ?: Guest(
+                        name = name,
+                        phone = phone,
+                        side = selectedSide,
+                        kinship = selectedKinship
                     )
+                    onConfirm(finalGuest)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = name.isNotBlank()
             ) {
-                Text("Adicionar Convidado")
+                Text(if (guestToEdit == null) "Adicionar Convidado" else "Salvar Alterações")
             }
         }
     }
